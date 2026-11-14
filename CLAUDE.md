@@ -6,6 +6,14 @@ design & manufacturing company. Tagline: **"It's all about ElectroniX"**.
 Static HTML/CSS/vanilla JS — **no framework, no build step, no npm**. Deployed to shared
 PHP hosting (cPanel) by uploading the folder as-is. Keep it that way unless asked.
 
+**Temporarily hosted on GitHub Pages** (repo `pratikdkale/iabex`, branch `main`):
+`.github/workflows/pages.yml` publishes only `index.html`, `assets/`, `favicon.ico`,
+`robots.txt`, `sitemap.xml`. Pages can't run PHP, so `<meta name="form-endpoint">` in
+`index.html` routes forms and chat enquiries to FormSubmit (`submitData` in `main.js`);
+job applications post natively (FormSubmit's AJAX can't take files) and return via
+`?sent=application`. On localhost forms still hit `api/send.php`. **Moving back to cPanel:
+delete that meta tag.**
+
 ## Run locally
 
 ```bash
@@ -20,10 +28,11 @@ also works if PHP is installed (then `api/send.php` runs for real and tries to s
 
 | Path | What it is |
 |---|---|
-| `index.html` | The whole page. Sections in order: header → hero (3D) → clients → `#about` → `#capabilities` → `#products` → `#process` → `#industries` → `#recognition` → `#work` (case studies) → `#quality` → `#facility` → `#careers` → `#faq` → `#contact` → `#testimonials` → footer. Plus a floating WhatsApp link and one `<dialog data-modal>`. |
+| `index.html` | The whole page. Sections in order: header → hero (3D) → clients → `#about` → `#capabilities` → `#products` → `#process` → `#industries` → `#recognition` → `#work` (case studies) → `#quality` → `#facility` → `#careers` → `#faq` → `#contact` → `#testimonials` → footer. Plus the floating chat assistant (`[data-chat]`) and one `<dialog data-modal>`. |
 | `assets/css/styles.css` | All styles. Design tokens in `:root` at the top; one block per section; **all breakpoints in the RESPONSIVE section at the bottom** (1100 / 960 / 640 px). |
 | `assets/js/main.js` | Menu, active-nav, scroll reveal, marquee, product filter, modal, AJAX forms. |
 | `assets/js/hero3d.js` | three.js PCB scene in the hero. |
+| `assets/js/chat.js` | Rule-based chat assistant (no AI service). Reads products, roles, industries, FAQ, clients and section text from the page; calculators; IST office hours; in-chat enquiry → `api/send.php`. |
 | `assets/vendor/three.min.js` | three.js **r149** (global `THREE` build). Do not upgrade past r149 without porting — r150+ dropped `build/three.min.js` and uses ES modules. |
 | `api/send.php` | Mailer for every form (JSON `{ok, message}`). |
 | `api/config.php` | SMTP + recipients. **Contains the SMTP password once filled in — never commit real credentials**; `.htaccess` blocks web access to it. |
@@ -60,7 +69,7 @@ also works if PHP is installed (then `api/send.php` runs for real and tries to s
 - Contact details (source of truth): info@iabex.net · +91 76666 90113 ·
   S.No. 131/2A 24, behind Church, Rajyog Society, Warje, Pune 411058 ·
   Mon–Sat 9:30–6:30. They appear in the contact section, footer, JSON-LD in `<head>`,
-  and `main.js` error text — update all of them together.
+  `main.js` error text and `CONTACT` in `chat.js` — update all of them together.
 
 ## Placeholders still to fill
 
@@ -78,7 +87,9 @@ Placeholder text uses `.placeholder` (copper ink) so it's easy to spot.
 - **Modal**: one `<dialog>`; `openModal(kind, data)` in `main.js` sets copy from `COPY`.
   Elements with `data-only="product catalogue apply"` are shown *and enabled* only for
   those kinds (disabled fields aren't validated or submitted). Triggers:
-  product cards, `[data-open-modal="catalogue|apply"]` with `data-title`.
+  product cards, `[data-open-modal="project|catalogue|apply"]` with `data-title`. Every
+  "Discuss a project / custom build" CTA opens `project` (links keep `href="#contact"` as the
+  no-JS fallback). `window.IABEX.openModal` / `filterProducts` are exposed for `chat.js`.
 - **Forms** post `FormData` to `api/send.php` with a hidden `type`:
   - `enquiry` → requires `name`, `email`, `message`; optional `product`, `interest`,
     `quantity`, `company`, `phone`.
@@ -88,6 +99,14 @@ Placeholder text uses `.placeholder` (copper ink) so it's easy to spot.
   - Honeypot field `website` must stay empty and hidden.
   If you add a field, add it to `send.php` (`$rows`) **and** `dev_server.py` `REQUIRED`
   if it's required.
+- **Chat assistant**: intents live in `INTENTS` in `chat.js` (`kw` strong keywords/phrases,
+  `weak` supporting words, `run` returns a message). Product search, family lists, roles,
+  testimonials and FAQ come from the DOM, so new product cards/roles need no chat changes;
+  add need-words for a new product to `NEED`. It must never quote specs or prices (same rule
+  as product cards). In-chat enquiries post `type=enquiry` with `interest` inferred.
+- **Scroll reveal**: `.reveal` is only hidden under `html.js` (set inline in `<head>`); a
+  2.5 s failsafe shows everything if `main.js` never starts. Bump the `?v=` on CSS/JS links
+  when you change them.
 - **3D hero**: `hero3d.js` renders to `[data-hero-canvas]`. Above 960 px the board is
   offset right; at ≤960 px it's framed inside `[data-hero-band]` (a spacer between the
   copy and the stats) using `camera.setViewOffset`. Falls back to the static dark hero

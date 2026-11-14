@@ -1,6 +1,7 @@
 /* IABEX — page behaviour (no framework, no build step).
  * Sections: mobile menu · active nav · reveal on scroll · marquee · product filter
- *           · enquiry/application modal · AJAX forms (api/send.php)
+ *           · enquiry/application modal · forms (api/send.php, or FormSubmit — see below)
+ *           The chat assistant lives in chat.js and uses window.IABEX.openModal.
  * The 3D hero lives in hero3d.js.
  */
 (function () {
@@ -46,14 +47,32 @@
   }
 
   /* ---------- Reveal on scroll ---------- */
+  // html.js hides .reveal; html.reveal-on tells the <head> failsafe that we're in charge.
   var reveals = $$('.reveal');
+  document.documentElement.classList.add('reveal-on');
+  function showReveal(el) { el.classList.add('is-in'); }
   if (!reduceMotion && 'IntersectionObserver' in window) {
     var ro = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); ro.unobserve(en.target); } });
+      entries.forEach(function (en) { if (en.isIntersecting) { showReveal(en.target); ro.unobserve(en.target); } });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
     reveals.forEach(function (el) { ro.observe(el); });
+    // Backstop for webviews where the observer never fires, and for jumps via anchor links:
+    // anything whose top has scrolled into (or past) the viewport is shown.
+    var pending = false;
+    var sweep = function () {
+      pending = false;
+      reveals = reveals.filter(function (el) {
+        if (el.classList.contains('is-in')) return false;
+        if (el.getBoundingClientRect().top < window.innerHeight) { showReveal(el); ro.unobserve(el); return false; }
+        return true;
+      });
+      if (!reveals.length) window.removeEventListener('scroll', onScroll);
+    };
+    var onScroll = function () { if (!pending) { pending = true; setTimeout(sweep, 250); } };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('load', sweep);
   } else {
-    reveals.forEach(function (el) { el.classList.add('is-in'); });
+    reveals.forEach(showReveal);
   }
 
   /* ---------- Marquee: duplicate logos for a seamless loop ---------- */
@@ -81,6 +100,13 @@
   /* ---------- Modal (product enquiry · catalogue · job application) ---------- */
   var modal = $('[data-modal]');
   var COPY = {
+    project: {
+      type: 'enquiry',
+      kicker: function () { return 'PROJECT ENQUIRY'; },
+      note: 'Tell us what you’re building — an idea, a specification or an existing product to improve. Our engineering team will get back to you.',
+      cta: 'Send project details',
+      done: 'Our engineering team will review your requirement and get back to you.'
+    },
     product: {
       type: 'enquiry',
       kicker: function (d) { return (d.code ? d.code + ' · ' : '') + 'PRODUCT ENQUIRY'; },
@@ -152,12 +178,64 @@
     p.addEventListener('click', function () { lastTrigger = p; openModal('product', { title: p.dataset.product, code: p.dataset.code }); });
   });
   $$('[data-open-modal]').forEach(function (b) {
-    b.addEventListener('click', function () { lastTrigger = b; openModal(b.dataset.openModal, { title: b.dataset.title || '' }); });
+    b.addEventListener('click', function (e) {
+      e.preventDefault(); // links keep href="#contact" as the no-JS fallback
+      lastTrigger = b; openModal(b.dataset.openModal, { title: b.dataset.title || '' });
+    });
   });
+  window.IABEX = { openModal: function (kind, data) { lastTrigger = document.activeElement; openModal(kind, data || {}); }, filterProducts: filterProducts };
 
-  /* ---------- AJAX forms → api/send.php ---------- */
+  /* ---------- Forms → api/send.php, or FormSubmit on static hosting ---------- */
+  // <meta name="form-endpoint"> in index.html switches every form (and the chat) to FormSubmit,
+  // because static hosts like GitHub Pages can't run PHP. Remove the meta to go back to
+  // api/send.php on cPanel. On localhost / file:// forms always go to api/send.php (dev_server.py).
   function showError(form, msg) { var e = $('[data-form-error]', form); if (e) { e.textContent = msg; e.classList.add('is-visible'); } }
   function hideError(form) { var e = $('[data-form-error]', form); if (e) { e.textContent = ''; e.classList.remove('is-visible'); } }
+  var FAIL_MSG = 'We couldn’t send that just now. Please email info@iabex.net or call +91 76666 90113.';
+  var endpointMeta = $('meta[name="form-endpoint"]');
+  var isLocal = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  var FORMSUBMIT = endpointMeta && endpointMeta.content && !isLocal ? endpointMeta.content.replace(/\/$/, '') : '';
+
+  // Same subject lines as api/send.php
+  function subjectFor(fd) {
+    var name = fd.get('name') || '';
+    if (fd.get('type') === 'application') return 'Job application: ' + (fd.get('role') || 'General application') + ' — ' + name;
+    return fd.get('product') ? 'Quote request: ' + fd.get('product') + ' — ' + name
+      : 'Website enquiry: ' + (fd.get('interest') || 'General') + ' — ' + name;
+  }
+  // FormSubmit control fields: _subject, _replyto, _honey (honeypot), _template, _captcha
+  function formSubmitControls(fd) {
+    return { _subject: subjectFor(fd), _replyto: fd.get('email') || '', _honey: fd.get('website') || '', _template: 'table', _captcha: 'false' };
+  }
+  // Sends FormData without files; resolves to { ok, message } like api/send.php.
+  function submitData(fd) {
+    if (!FORMSUBMIT) {
+      return fetch('api/send.php', { method: 'POST', body: fd })
+        .then(function (r) { return r.json().catch(function () { return { ok: r.ok, message: '' }; }); });
+    }
+    // URL-encoded body keeps it a "simple" CORS request (no preflight)
+    var body = new URLSearchParams(), controls = formSubmitControls(fd);
+    Object.keys(controls).forEach(function (k) { body.append(k, controls[k]); });
+    fd.forEach(function (v, k) { if (k !== 'website' && typeof v === 'string') body.append(k, v); });
+    return fetch(FORMSUBMIT.replace('formsubmit.co/', 'formsubmit.co/ajax/'), { method: 'POST', headers: { Accept: 'application/json' }, body: body })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (res) { return { ok: String(res.success) === 'true', message: '' }; });
+  }
+  // FormSubmit's AJAX endpoint doesn't take files, so applications (with a resume) are posted
+  // as a normal form and FormSubmit redirects back to ?sent=application.
+  function submitNative(form) {
+    var controls = formSubmitControls(new FormData(form));
+    controls._next = location.href.split(/[?#]/)[0] + '?sent=application#careers';
+    Object.keys(controls).forEach(function (k) {
+      if (k === '_honey') return;
+      var i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = controls[k]; form.appendChild(i);
+    });
+    var hp = $('input[name="website"]', form); if (hp) hp.name = '_honey';
+    form.setAttribute('action', FORMSUBMIT);
+    form.setAttribute('enctype', 'multipart/form-data');
+    HTMLFormElement.prototype.submit.call(form);
+  }
+  window.IABEX.submit = submitData;
 
   $$('[data-ajax-form]').forEach(function (form) {
     var wrap = form.closest('[data-form-wrap]');
@@ -177,22 +255,29 @@
       var label = btn.textContent;
       btn.disabled = true; btn.textContent = 'Sending…';
 
-      fetch(form.getAttribute('action') || 'api/send.php', { method: 'POST', body: new FormData(form) })
-        .then(function (r) { return r.json().catch(function () { return { ok: r.ok, message: '' }; }); })
+      var fd = new FormData(form);
+      if (FORMSUBMIT && fd.get('type') === 'application') { submitNative(form); return; }
+
+      submitData(fd)
         .then(function (res) {
           if (!res.ok) throw new Error(res.message || 'Something went wrong. Please try again.');
           wrap.classList.add('is-sent');
           form.reset();
         })
         .catch(function (err) {
-          var msg = err && err.message && err.message !== 'Failed to fetch'
-            ? err.message
-            : 'We couldn’t send that just now. Please email info@iabex.net or call +91 76666 90113.';
+          var msg = err && err.message && err.message !== 'Failed to fetch' && !FORMSUBMIT ? err.message : FAIL_MSG;
           showError(form, msg);
         })
         .then(function () { btn.disabled = false; btn.textContent = label; });
     });
   });
+
+  // Back from FormSubmit after a job application
+  if (/[?&]sent=application\b/.test(location.search) && modal) {
+    history.replaceState(null, '', location.pathname + location.hash);
+    openModal('apply', { title: 'Application sent' });
+    $('[data-form-wrap]', modal).classList.add('is-sent');
+  }
   $$('[data-form-reset]').forEach(function (b) {
     b.addEventListener('click', function () { b.closest('[data-form-wrap]').classList.remove('is-sent'); });
   });

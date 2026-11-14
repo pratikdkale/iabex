@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- Forms go to FormSubmit while the site is on static hosting (GitHub Pages). Delete this line on cPanel to use api/send.php. -->
+  <meta name="form-endpoint" content="https://formsubmit.co/info@iabex.net">
+  <!-- Scroll-reveal guard: hide .reveal content only while JS runs; if main.js hasn't started within 2.5 s, show everything. -->
+  <script>(function(d){d.classList.add('js');setTimeout(function(){if(!d.classList.contains('reveal-on'))d.classList.remove('js');},2500);})(document.documentElement);</script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>IABEX Technologies — Embedded Electronics Design &amp; Manufacturing, Pune</title>
   <meta name="description" content="IABEX Technologies designs and manufactures embedded electronics in Pune — PCB design, firmware, IoT, solar and industrial automation products, from prototype to production.">
@@ -22,7 +26,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/styles.css?v=3">
 
   <script type="application/ld+json">
   {
@@ -56,6 +60,10 @@
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke-width="2" stroke-linecap="round"/></symbol>
     <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.1A8.5 8.5 0 1 1 21 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2.5-6.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-phone-chat" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-13.3 7.9L3 21l1.2-4.5A9 9 0 1 1 21 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.2-2.2l.8-1-1-2z" fill="currentColor"/></symbol>
     <symbol id="i-quote" viewBox="0 0 24 24"><path d="M7 7h4v4c0 3-1.5 5-4 6l-1-1.5c1.5-.8 2.3-2 2.4-3.5H7zM14 7h4v4c0 3-1.5 5-4 6l-1-1.5c1.5-.8 2.3-2 2.4-3.5H14z"/></symbol>
   </defs>
 </svg>
@@ -78,7 +86,7 @@
       <a href="#contact">Contact</a>
     </nav>
     <div class="site-header__actions">
-      <a class="btn btn--primary" href="#contact">Start a project <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <a class="btn btn--primary" href="#contact" data-open-modal="project" data-title="Discuss a project">Discuss a project <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
       <button class="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav" data-menu-toggle>
         <svg aria-hidden="true"><use href="#i-menu"/></svg>
       </button>
@@ -92,7 +100,7 @@
     <a href="#facility">Facility</a>
     <a href="#careers">Careers</a>
     <a href="#contact">Contact</a>
-    <a class="btn btn--primary btn--lg" href="#contact">Start a project</a>
+    <a class="btn btn--primary btn--lg" href="#contact" data-open-modal="project" data-title="Discuss a project">Discuss a project</a>
   </nav>
 </header>
 
@@ -115,7 +123,7 @@
       <h1 class="hero__title rise rise-2">It’s all about Electroni<span class="x">X</span>.</h1>
       <p class="hero__sub rise rise-3">From schematic to shipped hardware — PCB design, firmware, enclosures and production for industrial, solar and process customers. One accountable team, one roof.</p>
       <div class="hero__ctas rise rise-4">
-        <a class="btn btn--primary btn--lg" href="#contact">Discuss your project <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn--primary btn--lg" href="#contact" data-open-modal="project" data-title="Discuss your project">Discuss your project <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
         <a class="btn btn--outline-dark btn--lg" href="#products">Explore products</a>
       </div>
     </div>
@@ -294,7 +302,7 @@
         <div class="cta-band__title">Don’t see exactly what you need?</div>
         <p class="cta-band__text">Most of our work starts from a customer’s specification. We adapt existing designs or build new electronics from scratch — hardware, firmware and enclosure.</p>
       </div>
-      <a class="btn btn--primary btn--lg" href="#contact">Discuss a custom build</a>
+      <a class="btn btn--primary btn--lg" href="#contact" data-open-modal="project" data-title="Discuss a custom build">Discuss a custom build</a>
     </div>
   </div>
 </section>
@@ -338,7 +346,7 @@
 <section class="section" id="recognition" style="padding-top:40px">
   <div class="container">
     <div class="award reveal">
-      <div class="award__media"><img src="assets/img/facility/millionsoul.webp" alt="MillionSoUL solar study lamp recognised with the Prime Minister’s Award" loading="lazy"></div>
+      <div class="award__media"><img src="assets/img/facility/millionsoul-pm.webp" alt="The Prime Minister examining the MillionSoUL solar study lamp with students" loading="lazy" width="698" height="569"></div>
       <div class="award__body">
         <div class="award__badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-3 5 3-1.5-8"/></svg>PRIME MINISTER’S AWARD · INNOVATION</div>
         <h2 class="award__title">Hardware behind an award-winning initiative.</h2>
@@ -585,13 +593,40 @@
   </div>
 </footer>
 
-<!-- TODO(client): confirm WhatsApp number -->
-<a class="wa" href="https://wa.me/917666690113" aria-label="Chat on WhatsApp" target="_blank" rel="noopener">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.3 7.9L3 21l1.2-4.5A9 9 0 1 1 21 12z"/></svg>
-</a>
+<!-- ============ CHAT ASSISTANT (assets/js/chat.js) ============
+     Rule-based, runs in the browser. Reads products/roles/FAQ from this page.
+     TODO(client): confirm WhatsApp number (also in chat.js CONTACT.wa). -->
+<div class="chat" data-chat>
+  <div class="chat__nudge" data-chat-nudge hidden>
+    <button class="chat__nudge-text" type="button" data-chat-nudge-open data-chat-nudge-text>Questions about a product or project? Ask me.</button>
+    <button class="chat__nudge-close" type="button" aria-label="Dismiss" data-chat-nudge-close><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+  </div>
+  <section class="chat__panel" id="chat-panel" role="dialog" aria-label="IABEX assistant" data-chat-panel hidden>
+    <header class="chat__head">
+      <span class="chat__avatar" aria-hidden="true">X</span>
+      <div class="chat__who">
+        <div class="chat__name">IABEX assistant</div>
+        <div class="chat__status"><span class="dot dot--live"></span>Online now</div>
+      </div>
+      <a class="chat__icon-btn" href="https://wa.me/917666690113" target="_blank" rel="noopener" aria-label="Continue on WhatsApp" title="Continue on WhatsApp"><svg aria-hidden="true"><use href="#i-phone-chat"/></svg></a>
+      <button class="chat__icon-btn" type="button" aria-label="Start over" title="Start over" data-chat-reset><svg aria-hidden="true"><use href="#i-refresh"/></svg></button>
+      <button class="chat__icon-btn" type="button" aria-label="Close chat" data-chat-close><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+    </header>
+    <div class="chat__log" role="log" aria-live="polite" data-chat-log></div>
+    <div class="chat__chips" data-chat-chips hidden></div>
+    <form class="chat__form" data-chat-form autocomplete="off">
+      <label class="sr-only" for="chat-input">Message</label>
+      <input id="chat-input" type="text" maxlength="1000" placeholder="Ask about products, projects, hours…" enterkeyhint="send">
+      <button class="chat__send" type="submit" aria-label="Send"><svg aria-hidden="true"><use href="#i-send"/></svg></button>
+    </form>
+  </section>
+  <button class="chat__fab" type="button" aria-label="Chat with IABEX" aria-controls="chat-panel" aria-expanded="false" data-chat-toggle>
+    <svg aria-hidden="true"><use href="#i-chat"/></svg>
+  </button>
+</div>
 
 <!-- ============ ENQUIRY / APPLICATION MODAL ============
-     One <dialog> serves three kinds: product | catalogue | apply.
+     One <dialog> serves four kinds: project | product | catalogue | apply.
      Elements with data-only="…" show (and are enabled) only for those kinds. -->
 <dialog class="modal" data-modal aria-labelledby="modal-title">
   <div class="modal__head">
@@ -615,7 +650,7 @@
       </div>
       <div class="form__row">
         <label class="field">Phone<input type="tel" name="phone" autocomplete="tel" data-required-for="apply"></label>
-        <label class="field" data-only="product catalogue">Company<input type="text" name="company" autocomplete="organization"></label>
+        <label class="field" data-only="project product catalogue">Company<input type="text" name="company" autocomplete="organization"></label>
         <label class="field" data-only="apply">Current location *<input type="text" name="location" required></label>
       </div>
       <label class="field" data-only="product">Quantity (approx.)<input type="text" name="quantity" inputmode="numeric"></label>
@@ -637,6 +672,17 @@
       </label>
       <label class="field" data-only="apply">Resume / CV * <span style="font-weight:400;color:#6E5644">PDF, DOC or DOCX · max 5 MB</span><input type="file" name="resume" accept=".pdf,.doc,.docx" required></label>
 
+      <label class="field" data-only="project">I’m interested in
+        <select name="interest">
+          <option>Custom product development</option>
+          <option>IoT &amp; connected devices</option>
+          <option>Solar &amp; renewable electronics</option>
+          <option>Industrial automation / SPM</option>
+          <option>ODM &amp; white labelling</option>
+          <option>Something else</option>
+        </select>
+      </label>
+      <label class="field" data-only="project">Project details *<textarea name="message" rows="4" required placeholder="What should it do, where will it run, rough quantities and timeline…"></textarea></label>
       <label class="field" data-only="product">Application / requirements *<textarea name="message" rows="3" required></textarea></label>
       <label class="field" data-only="catalogue">What are you looking for? *<textarea name="message" rows="3" required></textarea></label>
       <label class="field" data-only="apply">Why IABEX? (optional)<textarea name="cover" rows="3"></textarea></label>
@@ -656,7 +702,8 @@
 </dialog>
 
 <script src="assets/vendor/three.min.js" defer></script>
-<script src="assets/js/hero3d.js" defer></script>
-<script src="assets/js/main.js" defer></script>
+<script src="assets/js/hero3d.js?v=3" defer></script>
+<script src="assets/js/main.js?v=3" defer></script>
+<script src="assets/js/chat.js?v=3" defer></script>
 </body>
 </html>
